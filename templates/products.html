@@ -1,0 +1,160 @@
+<!-- templates/products.html -->
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Barcha E'lonlar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .product {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 300px;
+            padding: 15px;
+            transition: transform 0.2s;
+        }
+        .product:hover {
+            transform: translateY(-5px);
+        }
+        .product img {
+            max-width: 100%;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0;
+        }
+        .price {
+            color: #2ecc71;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        .info {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+        }
+        .location {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #444;
+        }
+        .location::before {
+            content: '📍';
+            margin-right: 5px;
+        }
+        .rating {
+            color: #ff9800;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .no-image {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+        .map {
+            height: 150px;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Barcha E'lonlar</h1>
+        <div class="product-list">
+            {% for product in products %}
+                <div class="product">
+                    {% with product.images.all as images %}
+                        {% if images %}
+                            {% for img in images %}
+                                <img src="{{ img.image.url }}" alt="{{ product.title }}">
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-image">Rasm mavjud emas</div>
+                        {% endif %}
+                    {% endwith %}
+                    <div class="title">{{ product.title }}</div>
+                    <div class="price">
+                        {{ product.price }} so'm
+                        {% if product.original_price %}
+                            <span class="original-price">{{ product.original_price }} so'm</span>
+                        {% endif %}
+                    </div>
+                    <div class="info">Tavsif: {{ product.description|truncatechars:50 }}</div>
+                    <div class="info">Holati: {{ product.condition|default:"Noma'lum" }}</div>
+                    <div class="info">Yangi: {{ product.is_new|yesno:"Ha,Yo'q" }}</div>
+                    <div class="info">Yetkazib berish: {{ product.delivery|yesno:"Ha,Yo'q" }}</div>
+                    {% if product.warranty %}
+                        <div class="info">Kafolat: {{ product.warranty }}</div>
+                    {% endif %}
+                    <div class="location">Kenglik: {{ product.latitude|default:0 }}, Uzunlik: {{ product.longitude|default:0 }}</div>
+                    <div class="rating">Reyting: {{ product.rating }} ({{ product.reviews }} sharh)</div>
+                    <div class="info">Ko'rishlar: {{ product.views }}</div>
+                    <div class="info">Sana: {{ product.created_at|date:"Y-m-d H:i" }}</div>
+                    <div class="info">Faol: {{ product.is_active|yesno:"Ha,Yo'q" }}</div>
+                    {% if product.latitude|default:0|floatformat:6 and product.longitude|default:0|floatformat:6 %}
+                        <div id="map-{{ product.id }}" class="map"></div>
+                        <script>
+                            function initMap_{{ product.id }}() {
+                                try {
+                                    const lat = parseFloat('{{ product.latitude|default:0|floatformat:6|safe }}');
+                                    const lng = parseFloat('{{ product.longitude|default:0|floatformat:6|safe }}');
+                                    if (isNaN(lat) || isNaN(lng)) {
+                                        throw new Error('Invalid coordinates');
+                                    }
+                                    const map = L.map('map-{{ product.id }}').setView([lat, lng], 12);
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                        maxZoom: 19,
+                                    }).addTo(map);
+                                    L.marker([lat, lng]).addTo(map)
+                                        .bindPopup('{{ product.title }}')
+                                        .openPopup();
+                                } catch (e) {
+                                    document.getElementById('map-{{ product.id }}').innerHTML = '<p style="color: red;">Lokatsiya xatosi: ' + e.message + '</p>';
+                                }
+                            }
+                            initMap_{{ product.id }}();
+                        </script>
+                    {% else %}
+                        <div class="info">Lokatsiya ma'lumoti yo"q</div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p>Hech qanday e'lon topilmadi.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</body>
+</html>
