@@ -1,3 +1,10 @@
-install package:
+create environment:
+  python3 -m venv venv
 
-pip install -r requirements.txt
+activate environment:
+  source venv/bin/activate
+
+install package:
+  pip install -r requirements.txt
+
+
