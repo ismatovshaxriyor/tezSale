@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from .models import Product
+from rest_framework.permissions import IsAuthenticated
+
 
 def webapp_test_view(request):
     return render(request, 'webhook_test.html')
