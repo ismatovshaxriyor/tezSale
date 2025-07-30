@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +32,17 @@ SITE_URL = 'https://d877-95-214-211-249.ngrok-free.app'
 
 FILE_UPLOAD_PERMISSIONS = 0o644 
 
+AUTH_USER_MODEL = 'webhook.User'
+
+# settings.py
+DJOSER = {
+    'SEND_ACTIVATION_EMAIL': False,  # Email yuborilmaydi
+    'SEND_CONFIRMATION_EMAIL': False,  # Tasdiqlash emaili ham yo'q
+    'USER_CREATE_PASSWORD_RETYPE': True,  # Parol takrorlash (ixtiyoriy)
+    # Quyidagi settingni qo'shing:
+    'LOGIN_AFTER_REGISTRATION': True,  # Ro'yxatdan o'tgandan keyin avtomatik login
+}
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'drf_yasg',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'djoser',
     'webhook',
     'api'
 ]
@@ -56,6 +69,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    ]
+}
+
+SIMPLE_JWT = {
+    'ALGORITHM': 'HS256',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=3)
+}
 
 ROOT_URLCONF = 'config.urls'
 
